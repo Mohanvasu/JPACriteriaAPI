@@ -1,16 +1,11 @@
 package com.mohanvasu.JPACriteriaAPI.util;
 
 import com.mohanvasu.JPACriteriaAPI.entity.Student;
-import com.mohanvasu.JPACriteriaAPI.model.Filter;
-import com.mohanvasu.JPACriteriaAPI.model.Operand;
-import com.mohanvasu.JPACriteriaAPI.model.PostPayload;
+import com.mohanvasu.JPACriteriaAPI.model.*;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,20 +16,27 @@ import java.util.List;
 public class GenerateDynamicQuery {
 
     private final EntityManager entityManager;
-    public void constructDynamicQuery(PostPayload postPayload){
 
-    }
-
-    private void constructWhereClause(Filter filter){
-        //build a dynamic query from the filter
-        List<Operand> operands = filter.getOperands();
+    public TypedQuery<Student> constructDynamicQuery(PostPayload postPayload){
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();  //obtaining criteriaBuilder from entityManager
         CriteriaQuery<Student> query = cb.createQuery(Student.class); //creating a criteria query instance
         Root<Student> student = query.from(Student.class);  //root entity from which query starts
-        List<Predicate> predicates = new ArrayList<>();
+        query.select(student); //select student from student table
+        List<Predicate> predicateFilter = constructWhereClause(postPayload.getFitler(),student,cb);
+        query.where(predicateFilter.toArray(new Predicate[0]));
+        List<Order> orders = constructOrderByClause(postPayload.getSort(),student);
+        query.orderBy(orders);
+        Page page = postPayload.getPage();
+        TypedQuery<Student> typedQuery = entityManager.createQuery(query);
+        typedQuery.setFirstResult((page.getOffset()-1)* page.getPageSize());
+        typedQuery.setMaxResults(page.getPageSize());
+        return typedQuery;
+    }
 
-        //select student from student table
-        query.select(student);
+    private List<Predicate> constructWhereClause(Filter filter,Root<Student> student,CriteriaBuilder cb){
+        //build a dynamic query from the filter
+        List<Operand> operands = filter.getOperands();
+        List<Predicate> predicates = new ArrayList<>();
         for(Operand operand : operands){
             String field = operand.getField();
             String value = operand.getValue();
@@ -66,6 +68,17 @@ public class GenerateDynamicQuery {
                 default:
                     throw new IllegalArgumentException("Invalid operator : " + operand.getOperator());
             }
+            predicates.add(predicate);
         }
+        return predicates;
+    }
+    private List<Order> constructOrderByClause(List<Sort> sorts,Root<Student> student){
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        List<Order> orderList = new ArrayList<>();
+        for(Sort sort : sorts){
+            String field = sort.getField();
+            orderList.add(cb.asc(student.get(field)));
+        }
+        return orderList;
     }
 }

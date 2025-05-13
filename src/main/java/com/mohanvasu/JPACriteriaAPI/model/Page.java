@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 public class Page {
     private int offset;
-    private int limit;
+    private int pageSize;
 }
