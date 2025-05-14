@@ -3,6 +3,7 @@ package com.mohanvasu.JPACriteriaAPI.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,12 +17,13 @@ import java.sql.Date;
 @Entity
 @Builder
 public class Student {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String firstName;
     private String lastName;
     private String email;
-    private String contact;
+    private Long contact;
     private String address;
     private Date dob;
 }

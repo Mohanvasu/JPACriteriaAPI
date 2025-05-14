@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class GenerateDynamicQuery {
+public class DynamicQueryUtil {
 
     private final EntityManager entityManager;
 
@@ -22,10 +22,12 @@ public class GenerateDynamicQuery {
         CriteriaQuery<Student> query = cb.createQuery(Student.class); //creating a criteria query instance
         Root<Student> student = query.from(Student.class);  //root entity from which query starts
         query.select(student); //select student from student table
-        List<Predicate> predicateFilter = constructWhereClause(postPayload.getFitler(),student,cb);
+        List<Predicate> predicateFilter = constructWhereClause(postPayload.getFilter(),student,cb);
         query.where(predicateFilter.toArray(new Predicate[0]));
-        List<Order> orders = constructOrderByClause(postPayload.getSort(),student);
-        query.orderBy(orders);
+        if(!postPayload.getSort().isEmpty()) {
+            List<Order> orders = constructOrderByClause(postPayload.getSort(), student);
+            query.orderBy(orders);
+        }
         Page page = postPayload.getPage();
         TypedQuery<Student> typedQuery = entityManager.createQuery(query);
         typedQuery.setFirstResult((page.getOffset()-1)* page.getPageSize());
@@ -40,7 +42,7 @@ public class GenerateDynamicQuery {
         for(Operand operand : operands){
             String field = operand.getField();
             String value = operand.getValue();
-            Predicate predicate=null;
+            Predicate predicate;
             switch (operand.getOperator()){
                 case EQ :
                     predicate = cb.equal(student.get(operand.getField()), operand.getValue());
@@ -77,7 +79,11 @@ public class GenerateDynamicQuery {
         List<Order> orderList = new ArrayList<>();
         for(Sort sort : sorts){
             String field = sort.getField();
-            orderList.add(cb.asc(student.get(field)));
+            if(sort.getDirection().equals(Direction.ASC)){
+                orderList.add(cb.asc(student.get(field)));
+            }else{
+                orderList.add(cb.desc(student.get(field)));
+            }
         }
         return orderList;
     }
