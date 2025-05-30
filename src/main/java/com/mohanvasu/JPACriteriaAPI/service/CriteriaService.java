@@ -2,6 +2,7 @@ package com.mohanvasu.JPACriteriaAPI.service;
 
 import com.mohanvasu.JPACriteriaAPI.entity.Student;
 import com.mohanvasu.JPACriteriaAPI.model.PostPayload;
+import com.mohanvasu.JPACriteriaAPI.model.StudentDetail;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -12,4 +13,5 @@ public interface CriteriaService {
     List<Student> fetchStudentDetails(PostPayload postPayload);
 
     void addStudent(@Valid Student student);
+    StudentDetail fetchStudentByEmail(String email);
 }
