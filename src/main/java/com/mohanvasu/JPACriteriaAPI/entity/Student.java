@@ -26,4 +26,5 @@ public class Student {
     private Long contact;
     private String address;
     private Date dob;
+    private String gender;
 }

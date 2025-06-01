@@ -35,7 +35,7 @@ public class DynamicQueryUtil {
         return typedQuery;
     }
 
-    private List<Predicate> constructWhereClause(Filter filter,Root<Student> student,CriteriaBuilder cb){
+    public List<Predicate> constructWhereClause(Filter filter,Root<Student> student,CriteriaBuilder cb){
         //build a dynamic query from the filter
         List<Operand> operands = filter.getOperands();
         List<Predicate> predicates = new ArrayList<>();
