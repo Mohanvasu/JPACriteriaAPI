@@ -3,6 +3,7 @@ package com.mohanvasu.JPACriteriaAPI.controller;
 import com.mohanvasu.JPACriteriaAPI.entity.Student;
 import com.mohanvasu.JPACriteriaAPI.model.ApiResponse;
 import com.mohanvasu.JPACriteriaAPI.model.PostPayload;
+import com.mohanvasu.JPACriteriaAPI.model.StudentDetail;
 import com.mohanvasu.JPACriteriaAPI.service.CriteriaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController()
 @RequestMapping("/api/criteria")
@@ -46,5 +48,23 @@ public class CriteriaController {
                 .message("Record fetched successfully")
                 .data(studentList)
                 .build(),HttpStatus.OK);
+    }
+    @GetMapping("/fetchStudentsByEmail/{email}")
+    public ResponseEntity<ApiResponse> getStudentDetailsByEmail(@PathVariable String email){
+        StudentDetail studentDetail = criteriaService.fetchStudentByEmail(email);
+        if(Objects.nonNull(studentDetail)){
+            return new ResponseEntity<>(
+                    ApiResponse.builder()
+                            .status(String.valueOf(HttpStatus.OK))
+                            .message("Record fetched success")
+                            .data(studentDetail).build()
+            ,HttpStatus.OK);
+        }
+        return new ResponseEntity<>(
+                ApiResponse.builder()
+                        .status(String.valueOf(HttpStatus.OK))
+                        .message("Record fetched success")
+                        .data(null).build()
+                ,HttpStatus.OK);
     }
 }

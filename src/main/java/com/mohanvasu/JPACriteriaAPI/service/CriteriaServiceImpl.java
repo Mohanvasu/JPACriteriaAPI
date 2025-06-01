@@ -3,6 +3,7 @@ package com.mohanvasu.JPACriteriaAPI.service;
 import com.mohanvasu.JPACriteriaAPI.entity.Student;
 import com.mohanvasu.JPACriteriaAPI.exception.DatabaseException;
 import com.mohanvasu.JPACriteriaAPI.model.PostPayload;
+import com.mohanvasu.JPACriteriaAPI.model.StudentDetail;
 import com.mohanvasu.JPACriteriaAPI.repository.CriteriaRepository;
 import com.mohanvasu.JPACriteriaAPI.util.DynamicQueryUtil;
 import jakarta.persistence.TypedQuery;
@@ -59,4 +60,20 @@ public class CriteriaServiceImpl implements CriteriaService {
             throw new DatabaseException("Error occurred while adding student :"+ e.getMessage());
         }
     }
+
+    @Override
+    public StudentDetail fetchStudentByEmail(String email) {
+        Optional<Student> studentOptional = criteriaRepository.findByEmail(email);
+        return studentOptional
+                .map(student -> StudentDetail.builder()
+                        .firstName(Optional.ofNullable(student.getFirstName())
+                                .map(String::toUpperCase)
+                                .orElse("NA"))
+                                .lastName(student.getLastName())
+                                .email(student.getEmail())
+                                .build()
+                        ).orElse(null);
+        
+    }
+
 }
